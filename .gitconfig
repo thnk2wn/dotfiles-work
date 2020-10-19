@@ -1,0 +1,6 @@
+[user]
+	name = Geoff Hudik
+	email = geoff.hudik@jobot.com
+
+[includeIf "gitdir:~/Repos/"]
+    path = ~/Repos/.gitconfig
