@@ -115,7 +115,7 @@ source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # https://www.atlassian.com/git/tutorials/dotfiles
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
-alias ls='ls -F'
+alias ls='ls -F -G'
 
 ## get rid of command not found ##
 alias cd..='cd ..'
@@ -125,6 +125,10 @@ alias ..='cd ..'
 alias ...='cd ../../../'
 alias ....='cd ../../../../'
 alias .....='cd ../../../../'
+
+alias cd-github='cd ~/dev/github'
+alias cd-go='cd ~/dev/gocode'
+alias cd-repos='cd ~/repos'
 
 # history - hs keyword
 alias hs='history | grep'
