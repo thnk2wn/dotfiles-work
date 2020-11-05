@@ -111,3 +111,26 @@ source $ZSH/oh-my-zsh.sh
 source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# https://www.atlassian.com/git/tutorials/dotfiles
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+
+alias ls='ls -F'
+
+## get rid of command not found ##
+alias cd..='cd ..'
+
+## a quick way to get out of current directory ##
+alias ..='cd ..'
+alias ...='cd ../../../'
+alias ....='cd ../../../../'
+alias .....='cd ../../../../'
+
+# history - hs keyword
+alias hs='history | grep'
+
+# make dir and navigate to
+alias mkcd='foo(){ mkdir -p "$1"; cd "$1" }; foo '
+
+# networking
+alias myip="curl http://ipecho.net/plain; echo"
