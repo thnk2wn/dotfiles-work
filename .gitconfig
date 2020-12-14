@@ -6,6 +6,7 @@
     path = ~/Repos/.gitconfig
 [core]
 	excludesfile = /Users/ghudik/.gitignore_global
+	editor = nano
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path = 
