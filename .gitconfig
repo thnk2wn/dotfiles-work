@@ -16,3 +16,5 @@
 	template = /Users/ghudik/.stCommitMsg
 [init]
 	defaultBranch = main
+[pager]
+	branch = false
