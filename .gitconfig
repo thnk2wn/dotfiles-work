@@ -19,3 +19,4 @@
 	defaultBranch = main
 [pager]
 	branch = false
+	stash = false
