@@ -138,3 +138,29 @@ alias mkcd='foo(){ mkdir -p "$1"; cd "$1" }; foo '
 
 # networking
 alias myip="curl http://ipecho.net/plain; echo"
+
+# ec2cp install-filebeat.sh jax-api-uat
+ec2cp() {
+  src=$1
+  host=$2
+  host_path=$3
+
+  if [ -z "$src" ]
+  then
+    echo >&2 "error: source file to copy is required"
+    return 1
+  fi
+
+  if [ -z "$host" ]
+  then
+    echo >&2 "error: host to copy file to is required"
+    return 1
+  fi
+
+  if [ -z "$host_path" ]
+  then
+    host_path="~/"
+  fi
+
+  scp -i ~/.ssh/jobot-ec2.pem "${src}" "ec2-user@${host}:${host_path}"
+}
