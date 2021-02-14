@@ -54,7 +54,22 @@ fi
 
 publicDnsName=${publicDnsNames[0]}
 
-# TODO: Dynamic profile to "/Users/ghudik/Library/Application Support/iTerm2/DynamicProfiles" using template here.
-# Then iTerm2 text with that profile.
+lib_path="$(osascript -e 'get POSIX path of (path to application support folder from user domain)')"
 
-ssh -i $SSH_DEFAULT_KEY ${SSH_DEFAULT_USER}@${publicDnsName}
+# https://iterm2.com/documentation-dynamic-profiles.html
+profile_filename="${lib_path}iTerm2/DynamicProfiles/${publicDnsName}.json"
+
+badge_text=$host
+tab_title=$host
+name=$host
+guid=$(uuidgen | tr "[:upper:]" "[:lower:]")
+json=$(sed \
+  -e "s/\${BADGE_TEXT}/${badge_text}/" \
+  -e "s@\${TAB_TITLE}@${tab_title}@" \
+  -e "s@\${GUID}@${guid}@" \
+  -e "s@\${NAME}@${name}@" \
+  ssh-iterm-template.json)
+
+# jq just to format so not all one line, easier to debug. Also to validate.
+echo "$json" | jq '.' > "$profile_filename"
+#ssh -i $SSH_DEFAULT_KEY ${SSH_DEFAULT_USER}@${publicDnsName}
