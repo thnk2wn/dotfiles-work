@@ -10,21 +10,27 @@ usage_exit() {
 
 ERROR: $error
 
-Usage: ssh-aws.sh -h <host-query>
+Usage: ssh-ec2.sh -h <host-query> [-i]
       -h Host name query (instance tag) - can include * for wildcard
+      -i Launches SSH command in custom iTerm2 profile
 
     Examples:
       ./ssh-aws.sh -h instance-name
-      ./ssh-aws.sh -h "partial-instance-name*"
+      ./ssh-ec2.sh -h instance-name -i
+      ./ssh-ec2.sh -h "partial-instance-name*"
 
 EOF
   exit 1
 }
 
 host_query=""
-while getopts "h:": flag; do
+iTerm=0
+
+while getopts "h:i" flag
+do
   case "$flag" in
     h) host_query=$OPTARG;;
+    i) iTerm=1;;
     (*) usage_exit "Unknown option"
   esac
 done
@@ -68,23 +74,6 @@ ip="$(echo $instance | jq -r .IP)"
 name="$(echo $instance | jq -r .Name)"
 image="$(echo $instance | jq -r .Image)"
 
-lib_path="$(osascript -e 'get POSIX path of (path to application support folder from user domain)')"
-
-# https://iterm2.com/documentation-dynamic-profiles.html
-profile_name=$(echo "$dns" | tr -d '"')
-profile_filename="${lib_path}iTerm2/DynamicProfiles/${profile_name}.json"
-
-badge_text="${name}"
-tab_title="${name} (${ip})"
-guid=$(uuidgen | tr "[:upper:]" "[:lower:]")
-
-json=$(sed \
-  -e "s/\${BADGE_TEXT}/${badge_text}/" \
-  -e "s@\${TAB_TITLE}@${tab_title}@" \
-  -e "s@\${GUID}@${guid}@" \
-  -e "s@\${NAME}@${name}@" \
-  ssh-iterm-template.json)
-
 # Might consider a better way to determine OS and default user
 ubuntu_image=ami-0dba2cb6798deb6d8
 user="ec2-user"
@@ -93,6 +82,46 @@ if [ "$ubuntu_image" = "$image" ]; then
   user="ubuntu"
 fi
 
-# jq just to format so not all one line, easier to debug. Also to validate.
-echo "$json" | jq '.' > "$profile_filename"
-ssh -i $SSH_DEFAULT_KEY ${user}@${dns}
+if [ "$iTerm" -eq 1 ]; then
+  lib_path="$(osascript -e 'get POSIX path of (path to application support folder from user domain)')"
+
+  # https://iterm2.com/documentation-dynamic-profiles.html
+  profile_name=$(echo "$dns" | tr -d '"')
+  profile_filename="${lib_path}iTerm2/DynamicProfiles/${profile_name}.json"
+
+  badge_text="${name}"
+  tab_title="${name} (${ip})"
+  guid=$(uuidgen | tr "[:upper:]" "[:lower:]")
+
+  json=$(sed \
+    -e "s/\${BADGE_TEXT}/${badge_text}/" \
+    -e "s@\${TAB_TITLE}@${tab_title}@" \
+    -e "s@\${GUID}@${guid}@" \
+    -e "s@\${NAME}@${name}@" \
+    ssh-ec2.json)
+
+  new_file=0
+  if [ ! -f "$profile_filename" ]; then
+    new_file=1
+  fi
+
+  # jq just to format so not all one line, easier to debug. Also to validate.
+  echo "$json" | jq '.' > "$profile_filename"
+
+  if [ "$new_file" -eq 1 ]; then
+    # Brand new profiles will take a moment before iTerm2 loads
+    sleep 3s
+  fi
+
+  applescript_funcs=$(sed \
+    -e "s@\${PROFILE}@${name}@" \
+    ssh-ec2.applescript)
+
+  osascript <<EOF
+    ${applescript_funcs}
+
+    execute("ssh -i $SSH_DEFAULT_KEY ${user}@${dns}", "${name}")
+EOF
+else
+  ssh -i $SSH_DEFAULT_KEY ${user}@${dns}
+fi
