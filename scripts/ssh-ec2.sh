@@ -77,10 +77,10 @@ name="$(echo $instance | jq -r .Name)"
 image="$(echo $instance | jq -r .Image)"
 
 # Might consider a better way to determine OS and default user
-ubuntu_image=ami-0dba2cb6798deb6d8
 user="ec2-user"
 
-if [ "$ubuntu_image" = "$image" ]; then
+if [ $image == 'ami-0b53034362082962f' ] || [ $image == 'ami-0dba2cb6798deb6d8' ]
+then
   user="ubuntu"
 fi
 
