@@ -95,12 +95,14 @@ if [ "$iTerm" -eq 1 ]; then
   tab_title="${name} (${ip})"
   guid=$(uuidgen | tr "[:upper:]" "[:lower:]")
 
+  script_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
   json=$(sed \
-    -e "s/\${BADGE_TEXT}/${badge_text}/" \
+    -e "s@\${BADGE_TEXT}@${badge_text}@" \
     -e "s@\${TAB_TITLE}@${tab_title}@" \
     -e "s@\${GUID}@${guid}@" \
     -e "s@\${NAME}@${name}@" \
-    ssh-ec2.json)
+    ${script_path}/ssh-ec2.json)
 
   new_file=0
   if [ ! -f "$profile_filename" ]; then
@@ -114,7 +116,7 @@ if [ "$iTerm" -eq 1 ]; then
     sleep 0.5
   fi
 
-  applescript_funcs=$(sed -e "s@\${PROFILE}@${name}@" ssh-ec2.applescript)
+  applescript_funcs=$(sed -e "s@\${PROFILE}@${name}@" ${script_path}/ssh-ec2.applescript)
 
     osascript <<EOF
 ${applescript_funcs}
