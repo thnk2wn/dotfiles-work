@@ -51,6 +51,8 @@ if ! which aws > /dev/null; then
     exit 1
 fi
 
+# TODO: support for instanceId recognition in query and querying on that instead of tag. Could do similar for IP, DNS.
+
 instances=$(aws ec2 describe-instances \
   --query "Reservations[*].Instances[*].{DNS:PublicDnsName,IP:PublicIpAddress,Image:ImageId,Name:Tags[?Key=='Name']|[0].Value}" \
   --filters Name=instance-state-name,Values=running Name=tag:Name,Values="${host_query}" \
@@ -109,18 +111,14 @@ if [ "$iTerm" -eq 1 ]; then
   echo "$json" | jq '.' > "$profile_filename"
 
   if [ "$new_file" -eq 1 ]; then
-    # Brand new profiles will take a moment before iTerm2 loads
-    sleep 3s
+    sleep 0.5
   fi
 
-  applescript_funcs=$(sed \
-    -e "s@\${PROFILE}@${name}@" \
-    ssh-ec2.applescript)
+  applescript_funcs=$(sed -e "s@\${PROFILE}@${name}@" ssh-ec2.applescript)
 
-  osascript <<EOF
-    ${applescript_funcs}
-
-    execute("ssh -i $SSH_DEFAULT_KEY ${user}@${dns}", "${name}")
+    osascript <<EOF
+${applescript_funcs}
+execute("ssh -i $SSH_DEFAULT_KEY ${user}@${dns}", "${name}")
 EOF
 else
   ssh -i $SSH_DEFAULT_KEY ${user}@${dns}

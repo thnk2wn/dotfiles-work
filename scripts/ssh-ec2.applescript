@@ -6,11 +6,31 @@ property open_in_new_window : false
 
 -- Handlers
 on new_window(profileName)
-	tell application "iTerm" to create window with profile "${PROFILE}"
+	-- Need to retry for situations when it's a new dynamic profile just created and iTerm2 hasn't picked up on it yet
+	set i to 4
+	repeat while i > 0
+		try
+			tell application "iTerm" to create window with profile "${PROFILE}"
+			set i to 0
+		on error
+			delay 0.5
+		end try
+		set i to i - 1
+	end repeat
 end new_window
 
 on new_tab(profileName)
-	tell application "iTerm" to tell the first window to create tab with profile "${PROFILE}"
+	-- Need to retry for situations when it's a new dynamic profile just created and iTerm2 hasn't picked up on it yet
+	set i to 4
+	repeat while i > 0
+		try
+			tell application "iTerm" to tell the first window to create tab with profile "${PROFILE}"
+			set i to 0
+		on error
+			delay 0.5
+		end try
+		set i to i - 1
+	end repeat
 end new_tab
 
 on call_forward()
@@ -61,13 +81,18 @@ on execute(cmd, profileName)
 	if appLaunched then
 		-- Bit of a hack but going with the inital opened tab on app launch won't execute command or get profile right
 		tell application "iTerm" to tell the first window to tell current session to close
+		repeat until not has_windows()
+			delay 0.01
+		end repeat
 		new_window(profileName)
 		repeat until has_windows()
 			delay 0.01
 		end repeat
-		send_text("clear")
+	else
+		#new_tab(profileName)
 	end if
 
+	send_text("clear")
 	send_text(cmd)
 	call_forward()
 end execute
