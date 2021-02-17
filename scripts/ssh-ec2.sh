@@ -3,6 +3,14 @@ set -e
 
 # Launches a new SSH session to specified EC2 host using a new iTerm2 tab with a dynamic profile.
 
+show_instances() {
+  export AWS_PAGER="" && aws ec2 describe-instances \
+    --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name']|[0].Value,DNS:PublicDnsName}" \
+    --filters Name=instance-state-name,Values=running \
+    --output table \
+    --no-paginate
+}
+
 usage_exit() {
   error="$1"
 
@@ -15,11 +23,12 @@ Usage: ssh-ec2.sh -h <host-query> [-i]
       -i Launches SSH command in custom iTerm2 profile
 
     Examples:
-      ./ssh-aws.sh -h instance-name
+      ./ssh-ec2.sh -h instance-name
       ./ssh-ec2.sh -h instance-name -i
       ./ssh-ec2.sh -h "partial-instance-name*"
 
 EOF
+  show_instances
   exit 1
 }
 

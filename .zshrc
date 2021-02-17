@@ -141,6 +141,16 @@ alias mkcd='foo(){ mkdir -p "$1"; cd "$1" }; foo '
 # networking
 alias myip="curl http://ipecho.net/plain; echo"
 
+ec2() {
+  host="$1"
+  ~/scripts/ssh-ec2.sh -h "$host"
+}
+
+ec2tab() {
+  host="$1"
+  ~/scripts/ssh-ec2.sh -h "$host" -i
+}
+
 # ec2cp install-filebeat.sh jax-api-uat
 ec2cp() {
   src=$1
