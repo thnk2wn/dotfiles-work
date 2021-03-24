@@ -130,6 +130,8 @@ alias .....='cd ../../../../'
 
 alias cd-github='cd ~/dev/github'
 alias cd-go='cd ~/dev/gocode'
+alias cd-hiring='cd ~/dev/gocode/src/hiring'
+alias cd-hiring-web='cd ~/dev/gocode/src/hiring/web/jax.jobot.com/www/assets/reactjs'
 alias cd-repos='cd ~/repos'
 
 # history - hs keyword
@@ -140,6 +142,8 @@ alias mkcd='foo(){ mkdir -p "$1"; cd "$1" }; foo '
 
 # networking
 alias myip="curl http://ipecho.net/plain; echo"
+
+alias swagger="docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=$HOME/go:/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
 
 ec2() {
   host="$1"

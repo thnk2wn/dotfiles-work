@@ -5,7 +5,7 @@ set -e
 
 show_instances() {
   export AWS_PAGER="" && aws ec2 describe-instances \
-    --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name']|[0].Value,DNS:PublicDnsName}" \
+    --query "Reservations[*].Instances[*].{Id:InstanceId,Name:Tags[?Key=='Name']|[0].Value,DNS:PublicDnsName}" \
     --filters Name=instance-state-name,Values=running \
     --output table \
     --no-paginate
@@ -16,7 +16,7 @@ usage_exit() {
 
   cat << EOF >&2
 
-ERROR: $error
+$error
 
 Usage: ssh-ec2.sh -h <host-query> [-i]
       -h Host name query (instance tag) - can include * for wildcard
