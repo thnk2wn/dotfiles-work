@@ -8,7 +8,7 @@ fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-export PATH=~/scripts:$PATH
+export PATH="/Users/ghudik/.dotnet/tools:~/scripts:$PATH"
 
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/ghudik/.oh-my-zsh"
@@ -179,4 +179,30 @@ ec2cp() {
   fi
 
   scp -i ~/.ssh/jobot-ec2.pem "${src}" "ec2-user@${host}:${host_path}"
+}
+
+s3open() {
+  url="$1"
+
+  if [ -z "$url" ]
+  then
+    echo >&2 "error: S3 URL is required"
+    return 1
+  fi
+
+  file=$(basename $url)
+  dest=~/temp
+  mkdir -p $dest
+  filename="$dest/$file"
+
+  aws s3 cp $url $filename
+  result=$?
+
+  if [ $result -ne 0 ]; then
+    >&2 echo "AWS s3 copy of '$url' failed with code ${result}"
+    exit $result
+  fi
+
+  echo "Downloaded to $filename. Opening"
+  open $filename
 }
