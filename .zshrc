@@ -206,3 +206,29 @@ s3open() {
   echo "Downloaded to $filename. Opening"
   open $filename
 }
+
+s3get() {
+  url="$1"
+
+  if [ -z "$url" ]
+  then
+    echo >&2 "error: S3 URL is required"
+    return 1
+  fi
+
+  file=$(basename $url)
+  dest=./
+  filename="$dest/$file"
+
+  aws s3 cp $url $filename
+  result=$?
+
+  if [ $result -ne 0 ]; then
+    >&2 echo "AWS s3 copy of '$url' failed with code ${result}"
+    exit $result
+  fi
+
+  echo "Downloaded to $filename."
+  stat $filename
+  open $dest
+}
