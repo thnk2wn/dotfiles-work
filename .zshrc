@@ -234,3 +234,57 @@ s3get() {
   stat $filename
   open $dest
 }
+
+s3cat() {
+  url="$1"
+
+  if [ -z "$url" ]
+  then
+    echo >&2 "error: S3 URL is required"
+    return 1
+  fi
+
+  aws s3 cp $url - | cat
+}
+
+setJaxEnv() {
+  env="$1"
+
+  if ! { [[ $env == "uat"  ||  $env == "prod" ||  $env == "local" ]] }; then
+    >&2 echo "Environment must must be 'local', 'uat', 'prod' - got '$env'."
+    return
+  fi
+
+  s3Url="$(
+    if [[ "$env" == "uat" ]]; then echo "s3://jobotsecure/jax_profile_uat.sh"
+    elif [[ "$env" == "prod" ]]; then echo "s3://jobotsecure/jax_profile.sh"
+    else echo ""
+    fi
+)"
+
+  echo "S3 URL: $s3Url"
+  echo "HOME: $HOME"
+
+  profile="$HOME/.zprofile"
+  orig="$HOME/OneDrive - Jobot/.profile/.zprofile"
+  bak="${profile}.bak"
+
+  if [[ "$env" == "local" ]] then
+    cp -f -v $orig $profile
+  else
+    cp -a -f -v $profile $bak
+    aws s3 cp $s3Url $profile
+
+    # overrides
+    echo -e "\n" >> $profile
+    echo "# OVERRIDES" >> $profile
+    echo "export GO111MODULE=off" >> $profile
+    echo "export GOPATH=\$HOME/dev/gocode" >> $profile
+    echo "export GOROOT=/usr/local/opt/go/libexec" >> $profile
+    echo "export PATH=\$PATH:\$GOPATH/bin" >> $profile
+  fi
+
+  source $profile
+  echo "jax env: $jax_environment"
+  code $profile
+}
