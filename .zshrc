@@ -184,7 +184,7 @@ ec2cp() {
 }
 
 s3open() {
-  url="$1"
+  url="$(echo $1 | xargs)"
 
   if [ -z "$url" ]
   then
@@ -210,7 +210,7 @@ s3open() {
 }
 
 s3get() {
-  url="$1"
+  url="$(echo $1 | xargs)"
 
   if [ -z "$url" ]
   then
@@ -236,7 +236,7 @@ s3get() {
 }
 
 s3cat() {
-  url="$1"
+  url="$(echo $1 | xargs)"
 
   if [ -z "$url" ]
   then

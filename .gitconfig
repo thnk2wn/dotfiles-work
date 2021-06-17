@@ -1,6 +1,6 @@
 [user]
 	name = Geoff Hudik
-	email = geoff.hudik@jobot.com
+	email = 120529+thnk2wn@users.noreply.github.com
 
 [includeIf "gitdir:~/Repos/"]
     path = ~/Repos/.gitconfig
