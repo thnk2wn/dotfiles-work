@@ -139,6 +139,8 @@ alias cd-repos='cd ~/repos'
 # history - hs keyword
 alias hs='history | grep'
 
+alias k=kubectl
+
 # make dir and navigate to
 alias mkcd='foo(){ mkdir -p "$1"; cd "$1" }; foo '
 
@@ -287,4 +289,68 @@ setJaxEnv() {
   source $profile
   echo "jax env: $jax_environment"
   code $profile
+}
+
+redisHost() {
+  local env="$1"
+  local host="jobot-jax-uat.e9eze8.ng.0001.use1.cache.amazonaws.com"
+
+  if [ "$env" = "prod" ]; then
+    host="jobot-jax.e9eze8.ng.0001.use1.cache.amazonaws.com"
+  fi
+
+  echo "$host"
+}
+
+redisGet() {
+  local key="$1"
+  local env="$2"
+  local host=$(redisHost $env)
+  echo "GET ${key}" | redis-cli -h $host -n 6 | jq
+}
+
+redisClientLookup() {
+  local key="lookups_$1"
+  local env="prod"
+  local host=$(redisHost $env)
+  local db=1
+
+  local value=$(echo "GET ${key}" | redis-cli -h $host -n $db)
+
+  if [ -z "$value" ]; then
+    echo "$key is not set on $host; nothing to reset"
+    return
+  fi
+
+  local ttl=$(echo "TTL ${key}" | redis-cli -h $host -n $db)
+
+  echo "$key on $host is: $value expires $ttl"
+  echo
+
+  if read -q "choice?Reset $key on $host? [y/n] "; then
+    echo
+    echo "SET ${key} 0 EX $ttl" | redis-cli -h $host -n $db
+  else
+    echo
+    echo "Reset skipped"
+  fi
+}
+
+ipAdd() {
+  local desc="$1"
+
+    if [ -z "$desc" ]
+    then
+      echo >&2 "error: Description of place is required - i.e. John Doe Starbucks"
+      return 1
+    fi
+
+  local ip=$(dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | tr -d '"')
+  local secGrpName="servers-production-private"
+  local host=$(hostname)
+  local spec="[{CidrIp=$ip/32,Description=\"$desc\"}]"
+
+  AWS_PAGER="" aws ec2 authorize-security-group-ingress \
+    --group-name $secGrpName \
+    --ip-permissions IpProtocol=all,IpRanges=$spec | jq
 }
