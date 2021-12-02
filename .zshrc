@@ -185,6 +185,15 @@ ec2cp() {
   scp -i ~/.ssh/jobot-ec2.pem "${src}" "ec2-user@${host}:${host_path}"
 }
 
+hugoMod() {
+  file="$GOPATH/src/hiring/web/jax.jobot.com/www/layouts/pages/inbox.html"
+  contents=$(cat $file)
+  echo " $contents" >$file
+  sleep .1
+  echo "$contents" >$file
+  stat $file
+}
+
 s3open() {
   url="$(echo $1 | xargs)"
 
@@ -348,7 +357,7 @@ ipAdd() {
   local ip=$(dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | tr -d '"')
   local secGrpName="servers-production-private"
   local host=$(hostname)
-  local spec="[{CidrIp=$ip/32,Description=\"$desc\"}]"
+  local spec="[{CidrIp=$ip/32,Description=\"${desc} ($host)\"}]"
 
   AWS_PAGER="" aws ec2 authorize-security-group-ingress \
     --group-name $secGrpName \
