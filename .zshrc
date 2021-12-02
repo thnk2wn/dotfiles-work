@@ -190,7 +190,7 @@ hugoMod() {
   contents=$(cat $file)
   echo " $contents" >$file
   sleep .1
-  echo "$contents" >$file
+  echo -n "$contents" >$file
   stat $file
 }
 
